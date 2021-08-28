@@ -18,7 +18,7 @@ public final class Group {
 
 	public final void updateNumber(int newNumber) {
 		for (int i = 0; i < lineList.size(); i++) {
-			lineList.set(0, lineList.get(0).replaceFirst("[0-9]+", newNumber + ""));
+			lineList.set(i, lineList.get(i).replaceFirst("[0-9]+", newNumber + ""));
 		}
 	}
 }
