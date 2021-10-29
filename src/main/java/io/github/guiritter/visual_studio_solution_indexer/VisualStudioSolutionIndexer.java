@@ -19,7 +19,9 @@ import javax.swing.JTextArea;
  */
 public final class VisualStudioSolutionIndexer {
 
-	public static final AtomicReference<JTextArea> inputArea = new AtomicReference<>();
+	public static final AtomicReference<JTextArea> inputAreaReference = new AtomicReference<>();
+	
+	public static final AtomicReference<JTextArea> outputAreaReference = new AtomicReference<>();
 
 	public static final String SCC_PROJECT_UNIQUE_NAME_TEXT = "SccProjectUniqueName";
 	public static final String SCC_PROJECT_TOP_LEVEL_PARENT_UNIQUE_NAME_TEXT = "SccProjectTopLevelParentUniqueName";
@@ -48,7 +50,7 @@ public final class VisualStudioSolutionIndexer {
 	}
 
 	public static final void indexSolution(ActionEvent buttonPressedEvent) {
-		var inputLineList = Arrays.asList(inputArea.get().getText().split("\n"));
+		var inputLineList = Arrays.asList(inputAreaReference.get().getText().split("\n"));
 		var groupList = new LinkedList<Group>();
 		groupList.add(new Group(false, null));
 		inputLineList.forEach(line -> VisualStudioSolutionIndexer.treatLine(line, groupList));
@@ -77,7 +79,8 @@ public final class VisualStudioSolutionIndexer {
 				builder.append(line).append("\n");
 			});
 		});
-		inputArea.get().setText(builder.toString());
+		inputAreaReference.get().setText("");
+		outputAreaReference.get().setText(builder.toString());
 	}
 
 	public static final void treatLine(String line, LinkedList<Group> groupList) {
@@ -97,6 +100,8 @@ public final class VisualStudioSolutionIndexer {
 		}
 		
 		else if ((!line.contains("SccLocalPath0"))
+		&&
+		(!line.contains("SccProjectFilePathRelativizedFromConnection0"))
 		&&
 		(
 			line.contains(SCC_PROJECT_UNIQUE_NAME_TEXT)
@@ -159,18 +164,28 @@ public final class VisualStudioSolutionIndexer {
 		JFrame frame = new JFrame("Visual Studio Solution Indexer");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		JScrollPane pane = new JScrollPane();
-		frame.add(pane, BorderLayout.CENTER);
+		JScrollPane inputPane = new JScrollPane();
+		frame.add(inputPane, BorderLayout.PAGE_START);
 
-		JTextArea area = new JTextArea();
-		pane.setViewportView(area);
-		area.setRows(10);
-		area.setColumns(25);
+		JTextArea inputArea = new JTextArea();
+		inputPane.setViewportView(inputArea);
+		inputArea.setRows(10);
+		inputArea.setColumns(25);
 
-		inputArea.set(area);
+		inputAreaReference.set(inputArea);
 
-		JButton button = new JButton("format");
-		frame.add(button, BorderLayout.PAGE_END);
+		JScrollPane outputPane = new JScrollPane();
+		frame.add(outputPane, BorderLayout.PAGE_END);
+
+		JTextArea outputArea = new JTextArea();
+		outputPane.setViewportView(outputArea);
+		outputArea.setRows(10);
+		outputArea.setColumns(25);
+
+		outputAreaReference.set(outputArea);
+
+		JButton button = new JButton("index");
+		frame.add(button, BorderLayout.CENTER);
 		button.addActionListener(VisualStudioSolutionIndexer::indexSolution);
 
 		frame.setVisible(true);
